@@ -1,0 +1,10 @@
+name: PvpRoom
+version: '0.2-Alpha'
+main: PvpRoom.pvpRoom.Main
+api-version: '1.19'
+authors: [ MrLejen ]
+description: This plugin is for creating a room dedicated to fighting between two or more people.
+website: https://github.com/mrlejen12/PvpRoom
+commands:
+  pvproom:
+    permission: op
