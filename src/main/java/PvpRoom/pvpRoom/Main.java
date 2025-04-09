@@ -2,10 +2,9 @@ package PvpRoom.pvpRoom;
 
 import PvpRoom.pvpRoom.Commands.PvpRoom;
 import PvpRoom.pvpRoom.Events.*;
-import PvpRoom.pvpRoom.Events.Gui.CustomSettingsEvent;
-import PvpRoom.pvpRoom.Events.Gui.DoorGuiEvent;
-import PvpRoom.pvpRoom.Events.Gui.GuiEvent;
-import PvpRoom.pvpRoom.Events.Gui.PlayerCountSettingEvent;
+import PvpRoom.pvpRoom.Events.Gui.*;
+
+import PvpRoom.pvpRoom.Events.Update.UpdateVersionEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,74 +16,70 @@ import java.io.File;
 import java.io.IOException;
 
 public final class Main extends JavaPlugin {
+
     private File dataFile;
+    private File roomDataFile;
+
     private FileConfiguration dataConfig;
+    private FileConfiguration roomDataConfig;
+
     @Override
     public void onEnable() {
 
-        SelectEvent selectEvent = new SelectEvent();
-        getConfig().set("Version","0.2-Alpha");
-        getConfig();
-        saveConfig();
+
+        getConfig().set("Version", "0.4-Alpha");
         saveDefaultConfig();
-        reloadConfig();
+        saveConfig();
+
+
         createDataFile();
-        String status = getDataConfig().getString("plugin.status");
-        if(status == null){
+        createRoomDataFile();
+
+//== Data Config ==
+        if (getDataConfig().get("plugin.status") == null) {
             getDataConfig().set("plugin.status", false);
-            saveDataConfig();
         }
-        String opendoortime1 = getDataConfig().getString("time.door.open");
-        String closedoortime1 = getDataConfig().getString("time.door.close");
-        if(opendoortime1 == null){
-            getDataConfig().set("time.door.open", 40);
-            saveDataConfig();
-        }
-        if(closedoortime1 == null){
-            getDataConfig().set("time.door.close", 40);
-            saveDataConfig();
-        }
-        String playercount = getDataConfig().getString("player.count");
-        if(playercount == null){
-            getDataConfig().set("player.count", 2);
-            saveDataConfig();
-        }
-        String gameblock = getDataConfig().getString("doorblock.block");
-        if(gameblock == null){
-            getDataConfig().set("doorblock.block", "GLASS");
-            saveDataConfig();
-        }
+        saveDataConfig();
 
 
-        Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[PvpRoom] Plugin Its On!");
 
-        // commands
+
+        Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[PvpRoom] Plugin is enabled!");
+
+        // Register commands
+        SelectEvent selectEvent = new SelectEvent();
         PvpRoom pvpRoomCommand = new PvpRoom(this, selectEvent);
         getCommand("pvproom").setExecutor(pvpRoomCommand);
         getCommand("pvproom").setTabCompleter(pvpRoomCommand);
 
-        // events
-        getServer().getPluginManager().registerEvents(selectEvent, this);
+        // Register events
         PluginManager pluginManager = Bukkit.getPluginManager();
-        pluginManager.registerEvents(new MoveEvent(this),this);
-        pluginManager.registerEvents(new DieEvent(this),this);
-        pluginManager.registerEvents(new QuitEvent(this),this);
-        pluginManager.registerEvents(new TeleportEvent(this),this);
-        pluginManager.registerEvents(new GuiEvent(this),this);
-        pluginManager.registerEvents(new DoorGuiEvent(this),this);
-        pluginManager.registerEvents(new CustomSettingsEvent(this),this);
-        pluginManager.registerEvents(new PlayerCountSettingEvent(this),this);
+        pluginManager.registerEvents(selectEvent, this);
+        pluginManager.registerEvents(new MoveEvent(this), this);
+        pluginManager.registerEvents(new DieEvent(this), this);
+        pluginManager.registerEvents(new QuitEvent(this), this);
+        pluginManager.registerEvents(new TeleportEvent(this), this);
+        pluginManager.registerEvents(new GuiEvent(this), this);
+        pluginManager.registerEvents(new DoorGuiEvent(this), this);
+        pluginManager.registerEvents(new PlayerCountSettingEvent(this), this);
+        pluginManager.registerEvents(new RoomGuiEvent(this), this);
+        pluginManager.registerEvents(new RoomGui2Event(this), this);
+        pluginManager.registerEvents(new WinnerItemGui(this), this);
+        pluginManager.registerEvents(new UpdateVersionEvent(this), this);
     }
-
 
     @Override
     public void onDisable() {
-        Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[PvpRoom] Plugin Its Off!");
+        Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[PvpRoom] Plugin is disabled!");
     }
+
+    // ------------------ data.yml ------------------
+
     private void createDataFile() {
         dataFile = new File(getDataFolder(), "data.yml");
         if (!dataFile.exists()) {
             try {
+                getDataFolder().mkdirs();
                 dataFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -100,6 +95,33 @@ public final class Main extends JavaPlugin {
     public void saveDataConfig() {
         try {
             dataConfig.save(dataFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ------------------ room_data.yml ------------------
+
+    private void createRoomDataFile() {
+        roomDataFile = new File(getDataFolder(), "room_data.yml");
+        if (!roomDataFile.exists()) {
+            try {
+                getDataFolder().mkdirs();
+                roomDataFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        roomDataConfig = YamlConfiguration.loadConfiguration(roomDataFile);
+    }
+
+    public FileConfiguration getRoomDataConfig() {
+        return roomDataConfig;
+    }
+
+    public void saveRoomDataConfig() {
+        try {
+            roomDataConfig.save(roomDataFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
