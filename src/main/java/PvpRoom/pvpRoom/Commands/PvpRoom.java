@@ -87,8 +87,8 @@ public class PvpRoom implements CommandExecutor, TabCompleter , Listener {
                     return true;
                 case "select":
                     player.sendMessage("§b[PvpRoom] §aAvailable Select commands:\n" +
-                            "§e/pvproom select door - To Select The Door\n" +
-                            "§e/pvproom select room - To Select The Room");
+                            "§e/pvproom select door <Room Name> - To Select The Door\n" +
+                            "§e/pvproom select room <Room Name> - To Select The Room");
                     return true;
                 case "status":
                     player.sendMessage("§b[PvpRoom] §aAvailable status commands:\n" +
@@ -96,59 +96,49 @@ public class PvpRoom implements CommandExecutor, TabCompleter , Listener {
                             "§e/pvproom status off - To Disable The Plugin");
                     return true;
                 case "settings":
-                    String gameblock = plugin.getDataConfig().getString("doorblock.block");
-                    Boolean status = plugin.getDataConfig().getBoolean("plugin.status");
-
-                    if(status.equals(false)){
-                        player.sendMessage("§b[PvpRoom] §cCan you Type §5/pvproom status on");
+                    String Check = plugin.getRoomDataConfig().getString("rooms");
+                    if(Check == null){
+                        player.sendMessage("§b[PvpRoom] §cInvalid usage! You need to create a room first:\n" +
+                                "§e/pvproom create lejenroom - To Enable The Plugin");
                         return true;
                     }
-                    if (gameblock != null) {
-                        Material material = Material.getMaterial(gameblock);
-                        ItemStack sword2 = new ItemStack(material);
-                        ItemMeta meta2 = sword2.getItemMeta();
-                        if (meta2 != null) {
-                            meta2.setDisplayName("§aDoor Block");
-                            ArrayList<String> menuLore = new ArrayList<>();
-                            menuLore.add("You can replace this block with the block you want.");
-                            meta2.setLore(menuLore);
-                            meta2.addEnchant(Enchantment.QUICK_CHARGE,5,true);
-                            sword2.setItemMeta(meta2);
+                    Inventory gui = Bukkit.createInventory(null, 9, "§dSett§5ings");
+                    for(int i=0; i<=8; i++){
+                        if(i !=2 && i !=4 && i !=6){
+                            gui.setItem(i, createItem(Material.BARRIER, "§CNUN"));
                         }
-                        Inventory gui = Bukkit.createInventory(null, 9, "§dSett§5ings");
-                        gui.setItem(2, sword2);
-                        gui.setItem(4, createItem(Material.CLOCK, "§dDoor§5 Ti§dmes"));
-                        gui.setItem(6, createItem(Material.EMERALD, "§eCus§6tom §dSett§5ings"));
-                        gui.setItem(0, createItem(Material.BARRIER, "§CNUN"));
-                        gui.setItem(1, createItem(Material.BARRIER, "§CNUN"));
-                        gui.setItem(3, createItem(Material.BARRIER, "§CNUN"));
-                        gui.setItem(5, createItem(Material.BARRIER, "§CNUN"));
-                        gui.setItem(7, createItem(Material.BARRIER, "§CNUN"));
-                        gui.setItem(8, createItem(Material.BARRIER, "§CNUN"));
-                        player.openInventory(gui);
-                        return true;
+                        if(i ==2){
+                            gui.setItem(2, createItem(Material.OAK_DOOR, "§dRooms§5 Sett§5ings"));
+                        }
+                        if(i ==4){
+                            if (plugin.getDataConfig().get("plugin.status") != null) {
+                        Boolean status = plugin.getDataConfig().getBoolean("plugin.status");
+                        if(status.equals(true)){
+                            gui.setItem(4, createItem(Material.GREEN_WOOL, "§ePlugin Status §aOn"));
+                        }
+                        if(status.equals(false)){
+                            gui.setItem(4, createItem(Material.RED_WOOL, "§ePlugin Status §cOff"));
+                        }
+
                     }
-                    ItemStack sword2 = new ItemStack(Material.GLASS);
-                    ItemMeta meta2 = sword2.getItemMeta();
-                    if (meta2 != null) {
-                        meta2.setDisplayName("§aDoor Block");
-                        ArrayList<String> menuLore = new ArrayList<>();
-                        menuLore.add("You can replace this block with the block you want.");
-                        meta2.setLore(menuLore);
-                        meta2.addEnchant(Enchantment.QUICK_CHARGE,5,true);
-                        sword2.setItemMeta(meta2);
+                        }
+                        if(i ==6){
+                            gui.setItem(i, createItem(Material.BLUE_CANDLE, "§9Discord Link"));
+                        }
                     }
-                    Inventory  gui = Bukkit.createInventory(null, 9, "§dSett§5ings");
-                    gui.setItem(2, sword2);
-                    gui.setItem(4, createItem(Material.CLOCK, "§dDoor§5 Times"));
-                    gui.setItem(6, createItem(Material.EMERALD, "§eCus§6tom §dSett§5ings"));
-                    gui.setItem(0, createItem(Material.BARRIER, "§CNUN"));
-                    gui.setItem(1, createItem(Material.BARRIER, "§CNUN"));
-                    gui.setItem(3, createItem(Material.BARRIER, "§CNUN"));
-                    gui.setItem(5, createItem(Material.BARRIER, "§CNUN"));
-                    gui.setItem(7, createItem(Material.BARRIER, "§CNUN"));
-                    gui.setItem(8, createItem(Material.BARRIER, "§CNUN"));
                     player.openInventory(gui);
+                    return true;
+                case "create":
+                    player.sendMessage("§b[PvpRoom] §aAvailable status commands:\n" +
+                            "§e/pvproom create <Room Name> - To Create The Room\n");
+                    return true;
+                case "remove":
+                    player.sendMessage("§b[PvpRoom] §aAvailable status commands:\n" +
+                            "§e/pvproom remove <Room Name> - To Create The Room\n");
+                    return true;
+                case "delete":
+                    player.sendMessage("§b[PvpRoom] §aAvailable status commands:\n" +
+                            "§e/pvproom delete <Room Name> - To Create The Room\n");
                     return true;
                 default:
                     player.sendMessage("§b[PvpRoom] §cInvalid usage! Type §5/pvproom help§c for a list of commands.");
@@ -159,7 +149,152 @@ public class PvpRoom implements CommandExecutor, TabCompleter , Listener {
 
 
 
+        if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("create")) {
+                FileConfiguration config = plugin.getRoomDataConfig();
+                if (config.get("rooms") == null) {
+                    config.set("rooms." + 1 + ".time.door.open", 40);
+                    config.set("rooms." + 1 + ".time.door.close", 40);
+                    config.set("rooms." + 1 + ".player.count", 2);
+                    config.set("rooms." + 1 + ".doorblock.block", "GLASS");
+                    config.set("rooms." + 1 + ".name", args[1]);
+                    config.set("rooms." + 1 + ".status", false);
+                    plugin.saveRoomDataConfig();
+                    player.sendMessage("§b[PvpRoom] §2Room created successfully! Name: §5" + args[1]);
+                    return true;
+                }
+                for (String key : config.getConfigurationSection("rooms").getKeys(false)) {
+                    String name = config.getString("rooms." + key + ".name");
+                    if (name != null && name.equalsIgnoreCase(args[1])) {
+                        player.sendMessage("§b[PvpRoom] §cThis room name is already taken.");
+                        return true;
+                    }
+                    int count = config.getConfigurationSection("rooms").getKeys(false).size();
+                    if(count >= 45){
+                        player.sendMessage("§b[PvpRoom] §cThe Max Room Number Is 45.");
+                        return true;
+                    }
+                }
+                int lastRoomId = config.getConfigurationSection("rooms").getKeys(false).stream()
+                        .mapToInt(Integer::parseInt)
+                        .max()
+                        .orElse(0);
 
+                int newRoomId = lastRoomId + 1;
+
+                config.set("rooms." + newRoomId + ".time.door.open", 40);
+                config.set("rooms." + newRoomId + ".time.door.close", 40);
+                config.set("rooms." + newRoomId + ".player.count", 2);
+                config.set("rooms." + newRoomId + ".doorblock.block", "GLASS");
+                config.set("rooms." + newRoomId + ".name", args[1]);
+                config.set("rooms." + newRoomId + ".status", false);
+                plugin.saveRoomDataConfig();
+
+                player.sendMessage("§b[PvpRoom] §2Room created successfully! Name: §5" + args[1]);
+                return true;
+            }
+
+
+
+
+            if (args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("remove")) {
+                FileConfiguration config = plugin.getRoomDataConfig();
+                if (config.get("rooms") == null) {
+                    player.sendMessage("§b[PvpRoom] §c There No Rooms To Delete It");
+                    return true;
+                }
+                for (String key : config.getConfigurationSection("rooms").getKeys(false)) {
+                    String name = config.getString("rooms." + key + ".name");
+                    if (name != null && name.equalsIgnoreCase(args[1])) {
+                        config.set("rooms." + key, null);
+                        plugin.saveRoomDataConfig();
+                        player.sendMessage("§b[PvpRoom] §2Room Deleted successfully!.");
+                        return true;
+                    }
+                }
+                player.sendMessage("§b[PvpRoom] §cThere Is No Room In That Name.");
+                return true;
+            }
+        }
+        if (args.length == 3) {
+            if (args[0].equalsIgnoreCase("select")) {
+                FileConfiguration config = plugin.getRoomDataConfig();
+                if (config.get("rooms") == null) {
+                    player.sendMessage("§b[PvpRoom] §c There No Rooms §e Use §a/pvproom create §eCommand To Create New Rooms");
+                    return true;
+                }
+                if (args[1].equalsIgnoreCase("door")) {
+                    for (String key : config.getConfigurationSection("rooms").getKeys(false)) {
+                        String name = config.getString("rooms." + key + ".name");
+                        if (name != null && name.equalsIgnoreCase(args[2])) {
+                            HashMap<UUID, SelectData> firstPosition = selectEvent.getFirstPosition();
+                            HashMap<UUID, SelectData> secondPosition = selectEvent.getSecondPosition();
+                            UUID playerUUID = player.getUniqueId();
+                            SelectData data = firstPosition.get(playerUUID);
+                            SelectData data2 = secondPosition.get(playerUUID);
+                            if (data == null){
+                                player.sendMessage("§b[PvpRoom] §cCan you select the First Position?\nType §5/pvproom selector§c to get select tool");
+                                return false;
+                            }
+                            if (data2 == null){
+                                player.sendMessage("§b[PvpRoom] §cCan you select the Second Position?\nType §5/pvproom selector§c to get select tool");
+                                return false;
+                            }
+                            UUID storedUUID = data.getPlayerUUID();
+                            Location storedLocation = data.getBlockLocation();
+                            Location storedLocation2 = data2.getBlockLocation();
+                            player.sendMessage("§b[PvpRoom] §aDone Select The Door");
+                            config.set("rooms." + key +".door."+player.getWorld().getName()+"."+"x",storedLocation.getBlockX());
+                            config.set("rooms." + key +".door."+player.getWorld().getName()+"."+"y",storedLocation.getBlockY());
+                            config.set("rooms." + key +".door."+player.getWorld().getName()+"."+"z",storedLocation.getBlockZ());
+                            config.set("rooms." + key +".door."+player.getWorld().getName()+"."+"x2",storedLocation2.getBlockX());
+                            config.set("rooms." + key +".door."+player.getWorld().getName()+"."+"y2",storedLocation2.getBlockY());
+                            config.set("rooms." + key +".door."+player.getWorld().getName()+"."+"z2",storedLocation2.getBlockZ());
+                            plugin.saveRoomDataConfig();
+                            return true;
+                        }
+                    }
+                    player.sendMessage("§b[PvpRoom] §cThere Is No Room In That Name.");
+                    return true;
+                }
+
+
+                if (args[1].equalsIgnoreCase("room")) {
+                    for (String key : config.getConfigurationSection("rooms").getKeys(false)) {
+                        String name = config.getString("rooms." + key + ".name");
+                        if (name != null && name.equalsIgnoreCase(args[2])) {
+                            HashMap<UUID, SelectData> firstPosition = selectEvent.getFirstPosition();
+                            HashMap<UUID, SelectData> secondPosition = selectEvent.getSecondPosition();
+                            UUID playerUUID = player.getUniqueId();
+                            SelectData data = firstPosition.get(playerUUID);
+                            SelectData data2 = secondPosition.get(playerUUID);
+                            if (data == null){
+                                player.sendMessage("§b[PvpRoom] §cCan you select the First Position?\nType §5/pvproom selector§c to get select tool");
+                                return false;
+                            }
+                            if (data2 == null){
+                                player.sendMessage("§b[PvpRoom] §cCan you select the Second Position?\nType §5/pvproom selector§c to get select tool");
+                                return false;
+                            }
+                            UUID storedUUID = data.getPlayerUUID();
+                            Location storedLocation = data.getBlockLocation();
+                            Location storedLocation2 = data2.getBlockLocation();
+                            player.sendMessage("§b[PvpRoom] §aDone Select The Room");
+                            config.set("rooms." + key +".room."+player.getWorld().getName()+"."+"x",storedLocation.getBlockX());
+                            config.set("rooms." + key +".room."+player.getWorld().getName()+"."+"y",storedLocation.getBlockY());
+                            config.set("rooms." + key +".room."+player.getWorld().getName()+"."+"z",storedLocation.getBlockZ());
+                            config.set("rooms." + key +".room."+player.getWorld().getName()+"."+"x2",storedLocation2.getBlockX());
+                            config.set("rooms." + key +".room."+player.getWorld().getName()+"."+"y2",storedLocation2.getBlockY());
+                            config.set("rooms." + key +".room."+player.getWorld().getName()+"."+"z2",storedLocation2.getBlockZ());
+                            plugin.saveRoomDataConfig();
+                            return true;
+                        }
+                    }
+                    player.sendMessage("§b[PvpRoom] §cThere Is No Room In That Name.");
+                    return true;
+                }
+            }
+        }
 
 
 
@@ -167,77 +302,14 @@ public class PvpRoom implements CommandExecutor, TabCompleter , Listener {
         if (args.length == 2) {
             switch (args[1].toLowerCase()) {
                 case "door":
-                    HashMap<UUID, SelectData> firstPosition = selectEvent.getFirstPosition();
-                    HashMap<UUID, SelectData> secondPosition = selectEvent.getSecondPosition();
-                    UUID playerUUID = player.getUniqueId();
-                    SelectData data = firstPosition.get(playerUUID);
-                    SelectData data2 = secondPosition.get(playerUUID);
-                    if (data == null){
-                        player.sendMessage("§b[PvpRoom] §cCan you select the First Position?\nType §5/pvproom selector§c to get select tool");
-                        return false;
-                    }
-                    if (data2 == null){
-                        player.sendMessage("§b[PvpRoom] §cCan you select the Second Position?\nType §5/pvproom selector§c to get select tool");
-                        return false;
-                    }
-                    UUID storedUUID = data.getPlayerUUID();
-                    Location storedLocation = data.getBlockLocation();
-                    Location storedLocation2 = data2.getBlockLocation();
-                    player.sendMessage("§b[PvpRoom] §aDone Select The Door");
-                    plugin.getDataConfig().set("door."+player.getWorld().getName()+"."+"x",storedLocation.getBlockX());
-                    plugin.getDataConfig().set("door."+player.getWorld().getName()+"."+"y",storedLocation.getBlockY());
-                    plugin.getDataConfig().set("door."+player.getWorld().getName()+"."+"z",storedLocation.getBlockZ());
-                    plugin.getDataConfig().set("door."+player.getWorld().getName()+"."+"x2",storedLocation2.getBlockX());
-                    plugin.getDataConfig().set("door."+player.getWorld().getName()+"."+"y2",storedLocation2.getBlockY());
-                    plugin.getDataConfig().set("door."+player.getWorld().getName()+"."+"z2",storedLocation2.getBlockZ());
-                    plugin.saveDataConfig();
-
+                    player.sendMessage("§b[PvpRoom] §aAvailable Select commands:\n" +
+                            "§e/pvproom select door <Room Name> - To Select The Door");
                     return true;
                 case "room":
-                    HashMap<UUID, SelectData> firstPositionn = selectEvent.getFirstPosition();
-                    HashMap<UUID, SelectData> secondPositionn = selectEvent.getSecondPosition();
-                    UUID playerUUIDD = player.getUniqueId();
-                    SelectData dataa = firstPositionn.get(playerUUIDD);
-                    SelectData dataa2 = secondPositionn.get(playerUUIDD);
-                    if (dataa == null){
-                        player.sendMessage("§b[PvpRoom] §cCan you select the First Position?\nType §5/pvproom selector§c to get select tool");
-                        return false;
-                    }
-                    if (dataa2 == null){
-                        player.sendMessage("§b[PvpRoom] §cCan you select the Second Position?\nType §5/pvproom selector§c to get select tool");
-                        return false;
-                    }
-                    UUID storedUUIDD = dataa.getPlayerUUID();
-                    Location storedLocationn = dataa.getBlockLocation();
-                    Location storedLocationn2 = dataa2.getBlockLocation();
-                    player.sendMessage("§b[PvpRoom] §aDone Select The Room");
-                    plugin.getDataConfig().set("room."+player.getWorld().getName()+"."+"x",storedLocationn.getBlockX());
-                    plugin.getDataConfig().set("room."+player.getWorld().getName()+"."+"y",storedLocationn.getBlockY());
-                    plugin.getDataConfig().set("room."+player.getWorld().getName()+"."+"z",storedLocationn.getBlockZ());
-                    plugin.getDataConfig().set("room."+player.getWorld().getName()+"."+"x2",storedLocationn2.getBlockX());
-                    plugin.getDataConfig().set("room."+player.getWorld().getName()+"."+"y2",storedLocationn2.getBlockY());
-                    plugin.getDataConfig().set("room."+player.getWorld().getName()+"."+"z2",storedLocationn2.getBlockZ());
-                    plugin.saveDataConfig();
+                    player.sendMessage("§b[PvpRoom] §aAvailable Select commands:\n" +
+                            "§e/pvproom select room <Room Name> - To Select The Room");
                     return true;
                 case "on":
-                    FileConfiguration config = plugin.getDataConfig();
-                    String worldName = player.getWorld().getName();
-                    String x1 = config.getString("room." + worldName + ".x");
-                    String y1 = config.getString("room." + worldName + ".y");
-                    String z1 = config.getString("room." + worldName + ".z");
-                    String x2 = config.getString("room." + worldName + ".x2");
-                    String y2 = config.getString("room." + worldName + ".y2");
-                    String z2 = config.getString("room." + worldName + ".z2");
-                    String xx1 = config.getString("door." + worldName + ".x");
-                    String yy1 = config.getString("door." + worldName + ".y");
-                    String zz1 = config.getString("door." + worldName + ".z");
-                    String xx2 = config.getString("door." + worldName + ".x2");
-                    String yy2 = config.getString("door." + worldName + ".y2");
-                    String zz2 = config.getString("door." + worldName + ".z2");
-                    if(x1 == null || x2 == null || xx1 == null || xx2 == null || y1 == null || y2 == null|| yy1 == null || yy2 == null || z1 == null || z2 == null || zz1 == null || zz2 == null){
-                        player.sendMessage("§b[PvpRoom] §cCan you select the (Room | Door) Position?\nType §5/pvproom select door§c AND §5/pvproom select room");
-                        return true;
-                    }
                     plugin.getDataConfig().set("plugin.status",true);
                     player.sendMessage("§b[PvpRoom] §aDone Enable The Plugin.");
                     plugin.saveDataConfig();
@@ -252,19 +324,53 @@ public class PvpRoom implements CommandExecutor, TabCompleter , Listener {
         player.sendMessage("§b[PvpRoom] §cInvalid usage! Type §5/pvproom help§c for a list of commands.");
         return true;
     }
+    @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
-            return Arrays.asList("help", "selector", "info","select","status","settings");
+            return Arrays.asList("help", "create", "remove", "delete", "selector", "info", "select", "status", "settings");
         }
+
         if (args.length == 2) {
             switch (args[0].toLowerCase()) {
                 case "select":
                     return Arrays.asList("door", "room");
+
                 case "status":
                     return Arrays.asList("on", "off");
+
+                case "create":
+                    return Arrays.asList("room1", "room2", "room3", "room4", "room5");
+
+                case "delete":
+                case "remove":
+                    FileConfiguration config = plugin.getRoomDataConfig();
+                    if (config.getConfigurationSection("rooms") == null) return Collections.emptyList();
+
+                    List<String> names = new ArrayList<>();
+                    for (String key : config.getConfigurationSection("rooms").getKeys(false)) {
+                        String name = config.getString("rooms." + key + ".name");
+                        if (name != null) names.add(name);
+                    }
+                    return names;
             }
         }
-        return null;
+        if (args.length == 3) {
+            switch (args[1].toLowerCase()) {
+                case "door":
+                case "room":
+                    FileConfiguration config = plugin.getRoomDataConfig();
+                    if (config.getConfigurationSection("rooms") == null) return Collections.emptyList();
+
+                    List<String> names = new ArrayList<>();
+                    for (String key : config.getConfigurationSection("rooms").getKeys(false)) {
+                        String name = config.getString("rooms." + key + ".name");
+                        if (name != null) names.add(name);
+                    }
+                    return names;
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     public static ItemStack createItem(Material material, String name) {
