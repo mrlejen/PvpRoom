@@ -54,11 +54,14 @@ public class PvpRoom implements CommandExecutor, TabCompleter , Listener {
                     player.sendMessage("§b[PvpRoom] §aAvailable commands:\n" +
                             "§e/pvproom info - Plugin Info\n" +
                             "§e/pvproom selector - Get Selector Item\n" +
-                            "§e/pvproom select door - Select The Door\n"+
-                            "§e/pvproom select room - Select The Room\n"+
+                            "§e/pvproom select door <Room Name> - Select The Door\n"+
+                            "§e/pvproom select room <Room Name> - Select The Room\n"+
                             "§e/pvproom status on - Turn On The Plugin\n"+
                             "§e/pvproom status off - Turn Off The Plugin\n"+
                             "§e/pvproom settings - Plugin Settings\n"+
+                            "§e/pvproom create <Room Name> - Create A New Room\n"+
+                            "§e/pvproom remove <Room Name> - Remove A Room\n"+
+                            "§e/pvproom delete <Room Name> - Delete A Room\n"+
                             "§e/pvproom help - Show Help message\n");
                     return true;
                 case "selector":
