@@ -9,12 +9,19 @@
  Take your PvP battles to the next level with PvpRoom! 🏆🔥
 <br>
 
-Download : https://www.spigotmc.org/resources/pvproom.123754/
+**Download** : https://www.spigotmc.org/resources/pvproom.123754/
+<br>
+______________
+https://modrinth.com/plugin/pvproom
+<br>
+<br>
 <br>
 
 
 
 
+
+**Info** :
 
 Plugin By : **MrLejen**<br>
 Tored Developer : **https://discord.gg/PtSgvBrWGS**<br>
