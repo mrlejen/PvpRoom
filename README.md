@@ -24,6 +24,6 @@ https://modrinth.com/plugin/pvproom
 **Info** :
 
 Plugin By : **MrLejen**<br>
-Tored Developer : **https://discord.gg/PtSgvBrWGS**<br>
+Tored Developer : **https://discord.gg/8s8XBz4RUG**<br>
 Discord : **@MrLejen**
 
